@@ -85,11 +85,11 @@ void Heap::print()
 
 void* Heap::split_block(Block* block, size_t req_size)
 {
-    // Create new block andplace allocation in beginning.
+    // Create new block and place allocation in beginning.
     // Move original block to after new block and resize.
 
     Block* oldBlock = reinterpret_cast<Block*>(reinterpret_cast<uint8_t*>(block->data()) + req_size);
-    oldBlock->size = block->size - req_size;
+    oldBlock->size = block->size - req_size - sizeof(Block);
     oldBlock->free = true;
     oldBlock->next = block->next;
 
@@ -97,7 +97,7 @@ void* Heap::split_block(Block* block, size_t req_size)
     newBlock->size = req_size;
     newBlock->free = false;
     newBlock->next = oldBlock;
-    newBlock->prev = oldBlock->prev;
+    newBlock->prev = block->prev;
     oldBlock->prev = newBlock;
 
     return newBlock->data();
