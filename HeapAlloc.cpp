@@ -59,6 +59,19 @@ void* Heap::allocate(const size_t size)
     return nullptr;
 }
 
+void Heap::deallocate(void* ptr)
+{
+    if (!ptr)
+    {
+        return;
+    }
+
+    Block* block = reinterpret_cast<Block*>(reinterpret_cast<uint8_t*>(ptr) - sizeof(Block));
+    block->free = true;
+
+    coalesce_blocks(block);
+}
+
 void Heap::print()
 {
 	Block* current = head;
@@ -88,4 +101,31 @@ void* Heap::split_block(Block* block, size_t req_size)
     oldBlock->prev = newBlock;
 
     return newBlock->data();
+}
+
+void Heap::coalesce_blocks(Block* block)
+{
+    // Check if can merge with next block.
+    Block* nextBlock = block->next;
+    if (nextBlock && nextBlock->free)
+    {
+        block->next = nextBlock->next;
+        block->size += nextBlock->size + sizeof(Block);
+        if (nextBlock->next)
+        {
+            nextBlock->next->prev = block;
+        }
+    }
+
+    // Check if can merge with previous block.
+    Block* prevBlock = block->prev;
+    if (prevBlock && prevBlock->free)
+    {
+        prevBlock->next = block->next;
+        prevBlock->size += block->size + sizeof(Block);
+        if (block->next)
+        {
+            block->next->prev = prevBlock;
+        }
+    }
 }

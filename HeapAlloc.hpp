@@ -24,13 +24,13 @@ public:
     ~Heap();
 
     void* allocate(size_t size);
-    void deallocate(void* block);
+    void deallocate(void* ptr);
     void print();
 
 private:
     Block* findFirstFreeBlock();
     void* split_block(Block* block, size_t req_size);
-    void* coalesce_blocks(Block* block);
+    void coalesce_blocks(Block* block);
 
     Block* head;
     size_t heap_size_;
