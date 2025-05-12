@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstddef>
 
-constexpr int DEFAULT_HEAP_SIZE = 1024*1024;
+constexpr size_t DEFAULT_HEAP_SIZE = 1024*1024;
 // constexpr int DEFAULT_BLOCK_SIZE = 1024;
 
 
@@ -24,7 +24,10 @@ public:
     ~Heap();
 
     void* allocate(size_t size);
-    void deallocate(void* ptr);
+    bool deallocate(void* ptr);
+
+    // Find first block with requested size. Convenient for finding blocks to deallocate.
+    void* findFirstBlock(size_t blockSize);
     void print();
 
 private:
