@@ -4,9 +4,9 @@ CXXFLAGS := -std=c++17 -Wall -Wextra -I.
 LDFLAGS := 
 
 # Project files
-SRCS := main.cpp HeapAlloc.cpp
+SRCS := main.cpp LinkedListHeapAllocator.cpp
 OBJS := $(SRCS:.cpp=.o)
-HEADERS := HeapAlloc.hpp
+HEADERS := LinkedListHeapAllocator.hpp HeapAllocDefines.hpp
 TARGET := heap_allocator
 
 # Build rules

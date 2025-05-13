@@ -1,31 +1,33 @@
-#include "HeapAlloc.hpp"
+#include "FirstFitLinkedListAllocator.hpp"
 
 #include <iostream>
 
 
-Heap::Heap(size_t heap_size)
-	: heap_size_(heap_size)
+namespace HeapAllocator
+{
+
+FirstFitLinkedListAllocator::FirstFitLinkedListAllocator(size_t heap_size)
+	: LinkedListHeapAllocator(heap_size)
 {
 	if (heap_size_ == 0)
 	{
 		throw std::bad_alloc();
 	}
 
-	head = reinterpret_cast<Block*>(new uint8_t[heap_size_ + sizeof(Block)]);
-	head->size = heap_size_;
-	head->free = true;
-	head->prev = nullptr;
-	head->next = nullptr;
+	head_ = reinterpret_cast<Block*>(new uint8_t[heap_size_ + sizeof(Block)]);
+	head_->size = heap_size_;
+	head_->free = true;
+	head_->prev = nullptr;
+	head_->next = nullptr;
 }
 
-Heap::~Heap()
+FirstFitLinkedListAllocator::~FirstFitLinkedListAllocator()
 {
-	delete reinterpret_cast<uint8_t*>(head);
 }
 
-Block* Heap::findFirstFreeBlock()
+Block* FirstFitLinkedListAllocator::findFirstFreeBlock()
 {
-	for (Block* current = head; current; current = current->next)
+	for (Block* current = head_; current; current = current->next)
 	{
 		if (current->free)
 		{
@@ -37,21 +39,7 @@ Block* Heap::findFirstFreeBlock()
 	return nullptr;
 }
 
-void* Heap::findFirstBlock(const size_t blockSize)
-{
-	for (Block* current = head; current; current = current->next)
-	{
-		if (current->size == blockSize)
-		{
-			return current->data();
-		}
-	}
-
-	// no free block
-	return nullptr;
-}
-
-void* Heap::allocate(const size_t size)
+void* FirstFitLinkedListAllocator::allocate(const size_t size)
 {
 	if (size == 0)
 	{
@@ -71,7 +59,7 @@ void* Heap::allocate(const size_t size)
 	return nullptr;
 }
 
-bool Heap::deallocate(void* ptr)
+bool FirstFitLinkedListAllocator::deallocate(void* ptr)
 {
 	if (!ptr)
 	{
@@ -90,20 +78,20 @@ bool Heap::deallocate(void* ptr)
 	return true;
 }
 
-void Heap::print()
+void FirstFitLinkedListAllocator::print() const
 {
 	const std::string blockAvailable = "free";
 	const std::string blockReserved = "reserved";
 
 	int i = 1;
-	for (Block* current = head; current; current = current->next)
+	for (Block* current = head_; current; current = current->next)
 	{
 		std::cout << (i++) << ": " << current->size << " - " << (current->free ? blockAvailable : blockReserved) << std::endl;
 	}
 	std::cout << std::endl;
 }
 
-void* Heap::split_block(Block* block, size_t req_size)
+void* FirstFitLinkedListAllocator::split_block(Block* block, size_t req_size)
 {
 	// Create new block and place allocation in beginning.
 	// Move original block to after new block and resize.
@@ -123,7 +111,7 @@ void* Heap::split_block(Block* block, size_t req_size)
 	return newBlock->data();
 }
 
-void Heap::coalesce_blocks(Block* block)
+void FirstFitLinkedListAllocator::coalesce_blocks(Block* block)
 {
 	// Check if can merge with next block.
 	Block* nextBlock = block->next;
@@ -149,3 +137,5 @@ void Heap::coalesce_blocks(Block* block)
 		}
 	}
 }
+
+} // namespace HeapAllocator

@@ -2,17 +2,21 @@
 #include <vector>
 
 
-#include "HeapAlloc.hpp"
+#include "FirstFitLinkedListAllocator.hpp"
 
+
+using HeapAllocator::FirstFitLinkedListAllocator;
 
 int main()
 {
 	const size_t heapSize = 1024;
-	Heap heap(heapSize);
+	FirstFitLinkedListAllocator heap(heapSize);
+	std::vector<void*> blocksAllocated;
 	for (const auto& allocSize : std::vector<size_t>({ 128, 256, 256, 64 }))
 	{
-		if (heap.allocate(allocSize))
+		if (void* ptr = heap.allocate(allocSize))
 		{
+			blocksAllocated.push_back(ptr);
 			heap.print();
 		}
 		else
@@ -21,21 +25,13 @@ int main()
 		}
 	}
 
-	void* ptr = heap.findFirstBlock(256);
-	if (!ptr)
+	for (const auto& blockPtr : blocksAllocated)
 	{
-		std::cout << "Failed to find block of size " << 256 << " bytes" << std::endl;
-	}
-	else
-	{
-		if (heap.deallocate(ptr))
+		if (!heap.deallocate(blockPtr))
 		{
-			heap.print();
+			std::cout << "Failed to deallocate " << blockPtr << std::endl;
 		}
-		else
-		{
-			std::cout << "Failed to deallocate " << ptr << " of size " << 256 << " bytes" << std::endl;
-		}
+		heap.print();
 	}
 
 	return 0;
